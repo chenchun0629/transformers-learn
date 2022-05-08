@@ -32,9 +32,15 @@ class Model(torch.nn.Module):
         super().__init__()
         self.fc = torch.nn.Linear(768, 2)
 
+        self.pretrained = AutoModel.from_pretrained('bert-base-chinese')
+
+        # 不训练,不需要计算梯度
+        for param in self.pretrained.parameters():
+            param.requires_grad_(False)
+
     def forward(self, input_ids, attention_mask, token_type_ids):
         with torch.no_grad():
-            out = pretrained(input_ids=input_ids,
+            out = self.pretrained(input_ids=input_ids,
                              attention_mask=attention_mask,
                              token_type_ids=token_type_ids)
 
@@ -120,12 +126,6 @@ if __name__ == '__main__':
 
     # 2、定义tokenizer, model
     token = AutoTokenizer.from_pretrained('bert-base-chinese')
-    pretrained = AutoModel.from_pretrained('bert-base-chinese')
-
-    # 不训练,不需要计算梯度
-    for param in pretrained.parameters():
-        param.requires_grad_(False)
-
 
     # 3、定义批处理方法
     def collate_fn(data):
